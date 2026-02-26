@@ -1,12 +1,12 @@
 package entities;
 
 public enum Sexo {
-    MACHO ("macho"),
-    FEMEA ("fêmea");
+    MACHO (1),
+    FEMEA (2);
 
-    private String sexo;
+    private int sexo;
 
-    Sexo(String sexo) {
+    Sexo(int sexo) {
         this.sexo = sexo;
     }
 }

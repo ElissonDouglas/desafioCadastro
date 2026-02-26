@@ -6,11 +6,11 @@ public class Pet {
     private Tipo tipo;
     private Sexo sexo;
     private String endereco;
-    private int idade;
-    private double peso;
+    private float idade;
+    private float peso;
     private String raca;
 
-    public Pet(String nome, String sobrenome, Tipo tipo, Sexo sexo, String endereco, int idade, double peso, String raca) {
+    public Pet(String nome, String sobrenome, Tipo tipo, Sexo sexo, String endereco, float idade, float peso, String raca) {
         this.nome = nome;
         this.sobrenome = sobrenome;
         this.tipo = tipo;
@@ -58,19 +58,19 @@ public class Pet {
         this.endereco = endereco;
     }
 
-    public int getIdade() {
+    public float getIdade() {
         return idade;
     }
 
-    public void setIdade(int idade) {
+    public void setIdade(float idade) {
         this.idade = idade;
     }
 
-    public double getPeso() {
+    public float getPeso() {
         return peso;
     }
 
-    public void setPeso(double peso) {
+    public void setPeso(float peso) {
         this.peso = peso;
     }
 

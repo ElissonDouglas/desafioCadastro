@@ -1,6 +1,8 @@
 import entities.Pet;
 import entities.Sexo;
 import entities.Tipo;
+import exceptions.InvalidAge;
+import exceptions.InvalidWeight;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -45,13 +47,13 @@ public class Progam {
                 try (BufferedReader br = new BufferedReader(new FileReader("formulario.txt"))) {
                     String line = br.readLine();
                     while (line != null) {
-                        System.out.println(line);
+                        //System.out.println(line);
                         int question = Integer.parseInt(String.valueOf(line.charAt(0)));
                         switch (question) {
                             case 1:
                                 boolean nomeValido = false;
                                 while (!nomeValido) {
-                                    System.out.print("Nome completo do pet: ");
+                                    System.out.println(line);
                                     try {
                                         String nomeCompleto = sc.nextLine();
                                         cadastrarPet(nomeCompleto);
@@ -64,19 +66,19 @@ public class Progam {
                                 line = br.readLine();
                                 continue;
                             case 2:
-                                boolean opcaoValida = false;
+                                boolean tipoValido = false;
 
-                                while (!opcaoValida) {
-                                    System.out.println("Qual o tipo do pet? (1 - Gato || 2 - Cachorro");
+                                while (!tipoValido) {
+                                    System.out.println(line);
                                     try{
                                         int tipo = sc.nextInt();
                                         sc.nextLine();
                                         if (tipo == 1) {
                                             pet.setTipo(Tipo.GATO);
-                                            opcaoValida = true;
+                                            tipoValido = true;
                                         } else if (tipo == 2) {
                                             pet.setTipo(Tipo.CACHORRO);
-                                            opcaoValida = true;
+                                            tipoValido = true;
                                         } else {
                                             throw new IllegalArgumentException("Erro: Valor inválido.");
                                         }
@@ -84,21 +86,39 @@ public class Progam {
                                         System.out.println(e.getMessage());
                                     } catch (InputMismatchException e) {
                                         System.out.println("Erro");
+                                        sc.nextLine();
                                     }
                                 }
                                 line = br.readLine();
                                 continue;
                             case 3:
-                                String sexo = sc.nextLine();
-                                sc.nextLine();
-                                if (sexo == "macho") {
-                                    pet.setSexo(Sexo.MACHO);
-                                } else if (sexo == "fêmea") {
-                                    pet.setSexo(Sexo.FEMEA);
+                                boolean sexoValido = false;
+
+                                while (!sexoValido) {
+                                    System.out.println(line);
+                                    try{
+                                        int tipo = sc.nextInt();
+                                        sc.nextLine();
+                                        if (tipo == 1) {
+                                            pet.setSexo(Sexo.MACHO);
+                                            sexoValido = true;
+                                        } else if (tipo == 2) {
+                                            pet.setSexo(Sexo.FEMEA);
+                                            sexoValido = true;
+                                        } else {
+                                            throw new IllegalArgumentException("Erro: Valor inválido.");
+                                        }
+                                    } catch (IllegalArgumentException e) {
+                                        System.out.println(e.getMessage());
+                                    } catch (InputMismatchException e) {
+                                        System.out.println("Erro");
+                                        sc.nextLine();
+                                    }
                                 }
                                 line = br.readLine();
                                 continue;
                             case 4:
+                                System.out.println(line);
                                 System.out.print("Número da casa: ");
                                 String numero = sc.nextLine();
                                 System.out.print("Cidade: ");
@@ -106,18 +126,56 @@ public class Progam {
                                 System.out.print("Rua: ");
                                 String rua = sc.nextLine();
 
-                                pet.setEndereco(rua + ", " + cidade + ", " + cidade);
+                                pet.setEndereco(rua + ", " + cidade + ", " + numero);
                                 line = br.readLine();
                                 continue;
                             case 5:
-                                int idade = sc.nextInt();
-                                pet.setIdade(idade);
-                                sc.nextLine();
+                                // TODO: Caso o usuário digite uma idade menor que 1 ano (idade em meses), transforme em 0.x anos.
+                                boolean idadeValida = false;
+                                while (!idadeValida) {
+                                    System.out.println(line);
+                                    try{
+                                        float idade = sc.nextFloat();
+                                        sc.nextLine();
+                                        if (idade > 20) {
+                                            throw new InvalidAge("Idade do pet não pode ser maior que 20 anos.");
+                                        }
+
+                                        pet.setIdade(idade);
+                                        idadeValida = true;
+                                    }
+                                    catch (InputMismatchException e){
+                                        System.out.println("Erro: Valor inválido");
+                                        sc.nextLine();
+                                    }
+                                    catch (InvalidAge e) {
+                                        System.out.println("Erro: " + e.getMessage());
+                                    }
+                                }
                                 line = br.readLine();
                                 continue;
                             case 6:
-                                double peso = sc.nextDouble();
-                                pet.setPeso(peso);
+                                boolean pesoValido = false;
+                                while (!pesoValido) {
+                                    System.out.println(line);
+                                    try{
+                                        float peso = sc.nextFloat();
+                                        sc.nextLine();
+                                        if (peso > 60 || peso < 0.5) {
+                                            throw new InvalidWeight("Peso não pode ser maior que 60kg ou menor que 0.5kg.");
+                                        }
+
+                                        pet.setPeso(peso);
+                                        pesoValido = true;
+                                    }
+                                    catch (InputMismatchException e){
+                                        System.out.println("Erro: Valor inválido");
+                                        sc.nextLine();
+                                    }
+                                    catch (InvalidWeight e) {
+                                        System.out.println("Erro: " + e.getMessage());
+                                    }
+                                }
                                 line = br.readLine();
                                 continue;
                             case 7:
@@ -138,13 +196,9 @@ public class Progam {
     }
 
     public static void cadastrarPet(String nomeCompleto) {
-        if (nomeCompleto == null || nomeCompleto.trim().isEmpty()) {
-            throw new IllegalArgumentException("Erro: O nome não pode estar vazio");
-        }
-
         String regra = "^[A-Za-z]+( [A-Za-z]+)+$";
 
-        if (!nomeCompleto.matches(regra)) {
+        if (!nomeCompleto.matches(regra) && !nomeCompleto.isEmpty()) {
             throw new IllegalArgumentException("Erro: O pet deve ter nome e sobrenome válidos, contendo APENAS letras de A-Z (sem acentos, números ou caracteres especiais)");
         }
 
