@@ -7,6 +7,7 @@ import exceptions.InvalidWeight;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -42,6 +43,7 @@ public class Progam {
         } while (!entradaValida);
 
         switch (option) {
+            // TODO: fazer a regra 10 do passo 3 do desafio
             case 1:
                 Pet pet = new Pet();
                 try (BufferedReader br = new BufferedReader(new FileReader("formulario.txt"))) {
@@ -56,7 +58,11 @@ public class Progam {
                                     System.out.println(line);
                                     try {
                                         String nomeCompleto = sc.nextLine();
-                                        cadastrarPet(nomeCompleto);
+                                        if (cadastrarPet(nomeCompleto)) {
+                                            String[] nomeDividido = nomeCompleto.split(" ", 2);
+                                            pet.setNome(nomeDividido[0]);
+                                            pet.setSobrenome(nomeDividido[1]);
+                                        };
                                         nomeValido = true;
                                     }
                                     catch (IllegalArgumentException e) {
@@ -130,16 +136,26 @@ public class Progam {
                                 line = br.readLine();
                                 continue;
                             case 5:
-                                // TODO: Caso o usuário digite uma idade menor que 1 ano (idade em meses), transforme em 0.x anos.
                                 boolean idadeValida = false;
                                 while (!idadeValida) {
                                     System.out.println(line);
                                     try{
                                         float idade = sc.nextFloat();
                                         sc.nextLine();
-                                        if (idade > 20) {
-                                            throw new InvalidAge("Idade do pet não pode ser maior que 20 anos.");
+                                        System.out.println("A idade está em: \n1 - anos\n2 - meses");
+                                        int anosOuMeses = sc.nextInt();
+                                        sc.nextLine();
+                                        if (anosOuMeses == 1) {
+                                            if (idade > 20) {
+                                                throw new InvalidAge("Idade do pet não pode ser maior que 20 anos.");
+                                            }
+                                        } else if (anosOuMeses == 2){
+                                            idade /= 12;
+                                        } else {
+                                            System.out.println("Opção inválida");
+                                            continue;
                                         }
+
 
                                         pet.setIdade(idade);
                                         idadeValida = true;
@@ -179,29 +195,48 @@ public class Progam {
                                 line = br.readLine();
                                 continue;
                             case 7:
-                                String raca = sc.nextLine();
-                                pet.setRaca(raca);
+                                boolean racaValida = false;
+                                while (!racaValida) {
+                                    try {
+                                        String regex = "^[\\d\\p{Punct}\\s]+$";
+                                        System.out.println(line);
+                                        String raca = sc.nextLine();
+                                        if (!raca.matches(regex)) {
+                                            pet.setRaca(raca);
+                                            racaValida = true;
+                                        } else {
+                                            throw new IllegalArgumentException("Só é permitido letras.");
+                                        }
+
+                                    }
+                                    catch (IllegalArgumentException e) {
+                                        System.out.println("Erro:" + e.getMessage());
+                                    }
+                                }
+                                line = null;
                                 break;
                         }
                     }
                 } catch (IOException e) {
                     System.out.println("Error: " + e.getMessage());
                 }
-
                 System.out.println(pet);
+                try {
+                    pet.savePet();
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
         }
-
-
         sc.close();
     }
 
-    public static void cadastrarPet(String nomeCompleto) {
+    public static boolean cadastrarPet(String nomeCompleto) {
         String regra = "^[A-Za-z]+( [A-Za-z]+)+$";
 
         if (!nomeCompleto.matches(regra) && !nomeCompleto.isEmpty()) {
             throw new IllegalArgumentException("Erro: O pet deve ter nome e sobrenome válidos, contendo APENAS letras de A-Z (sem acentos, números ou caracteres especiais)");
         }
 
-        System.out.println("Pet cadastrado com sucesso!");
+        return true;
     }
 }
