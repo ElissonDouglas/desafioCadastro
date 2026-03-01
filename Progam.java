@@ -62,7 +62,7 @@ public class Progam {
                                             String[] nomeDividido = nomeCompleto.split(" ", 2);
                                             pet.setNome(nomeDividido[0]);
                                             pet.setSobrenome(nomeDividido[1]);
-                                        };
+                                        }
                                         nomeValido = true;
                                     }
                                     catch (IllegalArgumentException e) {
