@@ -202,99 +202,132 @@ public class PetService {
        }
    }
 
-   public static void buscarPet() throws IOException {
+    public static void buscarPet() {
         Scanner sc = new Scanner(System.in);
-       System.out.println("Qual o tipo de animal quer buscar?: \n" +
-               "1 - Gato\n" +
-               "2- Cachorro");
-       int num = sc.nextInt();
-       sc.nextLine();
 
-       Tipo tipoAnimal = Tipo.pegarPorNumero(num);
+        // 1. PEGANDO O TIPO DE ANIMAL (Filtro obrigatório)
+        System.out.println("Qual o tipo de animal quer buscar?: \n1 - Gato\n2 - Cachorro");
+        int num = sc.nextInt();
+        sc.nextLine();
+        Tipo tipoAnimal = Tipo.pegarPorNumero(num);
 
-       System.out.println("Escolha o(s) paramêtros para realizar a busca: \n" +
-               "1- Nome ou sobrenome\n" +
-               "2 - Sexo\n" +
-               "3 - Idade\n" +
-               "4 - Peso\n" +
-               "5- Raça\n" +
-               "Endereço");
-       int searchOption = sc.nextInt();
-       sc.nextLine();
+        // 2. PEGANDO O CRITÉRIO DE BUSCA
+        System.out.println("Escolha o parâmetro para realizar a busca: \n" +
+                "1 - Nome ou sobrenome\n" +
+                "2 - Sexo\n" +
+                "3 - Idade\n" +
+                "4 - Peso\n" +
+                "5 - Raça\n" +
+                "6 - Endereço");
+        int searchOption = sc.nextInt();
+        sc.nextLine();
 
-       switch (searchOption) {
+        // 3. DESCOBRINDO O TERMO DA BUSCA ANTES DE ABRIR OS ARQUIVOS
+        String termoBusca = "";
+        switch (searchOption) {
+            case 1:
+                System.out.println("Digite o nome ou parte do nome:");
+                termoBusca = sc.nextLine().toLowerCase();
+                break;
+            case 2:
+                System.out.println("Digite o sexo (MACHO ou FEMEA):");
+                termoBusca = sc.nextLine().toLowerCase();
+                break;
+            case 3:
+                System.out.println("Digite a idade do pet");
+                termoBusca = sc.nextLine();
+                break;
+            case 4:
+                System.out.println("Digite o peso do pet");
+                termoBusca = sc.nextLine();
+                break;
+            case 5:
+                System.out.println("Digite a raça do pet");
+                termoBusca = sc.nextLine();
+                break;
+            case 6:
+                System.out.println("Digite o endereço ou parte do endereço do pet");
+                termoBusca = sc.nextLine();
+                break;
+            default:
+                System.out.println("Opção inválida.");
+                return; // Sai da função
+        }
 
-           case 1:
-               File[] files = FileService.lerCadastros();
-               if (files == null || files.length == 0) {
-                   System.out.println("Nenhum pet cadastrado no sistema.");
-                   break;
-               }
+        // 4. PREPARANDO A BUSCA
+        File[] files = FileService.lerCadastros();
+        if (files == null || files.length == 0) {
+            System.out.println("Nenhum pet cadastrado no sistema.");
+            return;
+        }
 
-               StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
+        int contadorResultados = 1;
 
-               System.out.println("Digite o nome ou parte do nome do Pet:");
-               String nomeBusca = sc.nextLine().toLowerCase();
+        // 5. O LAÇO ÚNICO (Lê os arquivos apenas uma vez, independente do critério)
+        for (File file : files) {
+            String nomePet = "", sexoPet = "", tipoPet = "", idadePet = "", pesoPet = "", racaPet = "", enderecoPet = "";
 
-               int contadorResultados = 1; // Para numerar os resultados (1., 2., 3...)
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (line.startsWith("1")) nomePet = line.substring(3).trim();
+                    else if (line.startsWith("2")) tipoPet = line.substring(3).trim();
+                    else if (line.startsWith("3")) sexoPet = line.substring(3).trim();
+                    else if (line.startsWith("4")) enderecoPet = line.substring(3).trim();
+                    else if (line.startsWith("5")) idadePet = line.substring(3).trim();
+                    else if (line.startsWith("6")) pesoPet = line.substring(3).trim();
+                    else if (line.startsWith("7")) racaPet = line.substring(3).trim();
+                }
 
-               for (File file : files) {
-                   String nomePet = "";
-                   String sexoPet = "";
-                   String tipoPet = "";
-                   String idadePet = "";
-                   String pesoPet = "";
-                   String racaPet = "";
-                   String enderecoPet = "";
+                // ==========================================================
+                // A MÁGICA ACONTECE AQUI: AVALIAÇÃO DINÂMICA
+                // ==========================================================
+                boolean tipoBate = tipoPet.equalsIgnoreCase(tipoAnimal.name());
+                boolean criterioBate = false;
 
-
-                   try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-                       String line;
-                       while ((line = br.readLine()) != null) {
-                           if (line.startsWith("1")) nomePet = line.substring(3).trim();
-                           else if (line.startsWith("2")) tipoPet = line.substring(3).trim();
-                           else if (line.startsWith("3")) sexoPet = line.substring(3).trim();
-                           else if (line.startsWith("4")) enderecoPet = line.substring(3).trim();
-                           else if (line.startsWith("5")) idadePet = line.substring(3).trim();
-                           else if (line.startsWith("6")) pesoPet = line.substring(3).trim();
-                           else if (line.startsWith("7")) racaPet = line.substring(3).trim();
-                       }
-
-                       // 1. Verifica se o tipo de animal bate com o que o usuário escolheu no começo
-                       boolean tipoBate = tipoPet.equalsIgnoreCase(tipoAnimal.name());
-
-                       // 2. Verifica se o nome do pet contém o texto que o usuário digitou
-                       boolean nomeBate = nomePet.toLowerCase().contains(nomeBusca);
-
-                       if (tipoBate && nomeBate) {
-                           // Se passou no filtro, monta a String
-                           sb.append(contadorResultados).append(". ")
-                                   .append(nomePet).append(" - ")
-                                   .append(tipoPet).append(" - ")
-                                   .append(sexoPet).append(" - ")
-                                   .append(enderecoPet).append(" - ")
-                                   .append(idadePet).append(" - ")
-                                   .append(pesoPet).append(" - ")
-                                   .append(racaPet).append("\n");
-
-                           contadorResultados++;
-                       }
-
-                   } catch (IOException e) {
-                       System.out.println("Erro ao ler o arquivo: " + file.getName());
-                   }
-               }
+                // Verificamos apenas o critério que o usuário escolheu lá em cima
+                if (searchOption == 1) {
+                    criterioBate = nomePet.toLowerCase().contains(termoBusca);
+                } else if (searchOption == 2) {
+                    criterioBate = sexoPet.toLowerCase().equalsIgnoreCase(termoBusca);
+                } else if (searchOption == 3) {
+                    criterioBate = idadePet.contains(termoBusca);
+                } else if (searchOption == 4) {
+                    criterioBate = pesoPet.contains(termoBusca);
+                } else if (searchOption == 5) {
+                    criterioBate = racaPet.contains(termoBusca);
+                } else if (searchOption == 6) {
+                    criterioBate = enderecoPet.contains(termoBusca);
+                }
 
 
-               if (sb.length() > 0) {
-                   System.out.println("\nResultados da Busca:");
-                   System.out.println(sb);
-               } else {
-                   System.out.println("\nNenhum pet encontrado com esses critérios.");
-               }
-               break;
-       }
-   }
+                // se for o correto entao é adicionado nos resultados
+                if (tipoBate && criterioBate) {
+                    sb.append(contadorResultados).append(". ")
+                            .append(nomePet).append(" - ")
+                            .append(tipoPet).append(" - ")
+                            .append(sexoPet).append(" - ")
+                            .append(enderecoPet).append(" - ")
+                            .append(idadePet).append(" - ")
+                            .append(pesoPet).append(" - ")
+                            .append(racaPet).append("\n");
+                    contadorResultados++;
+                }
+
+            } catch (IOException e) {
+                System.out.println("Erro ao ler o arquivo: " + file.getName());
+            }
+        }
+
+        // 6. IMPRIME O RESULTADO FINAL
+        if (sb.length() > 0) {
+            System.out.println("\nResultados da Busca:");
+            System.out.println(sb);
+        } else {
+            System.out.println("\nNenhum pet encontrado com esses critérios.");
+        }
+    }
 
    public static String buscarTodosCadastros() {
        File[] files = FileService.lerCadastros();
