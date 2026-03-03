@@ -108,28 +108,4 @@ public class Pet {
     public void setTipo(Tipo tipo) {
         this.tipo = tipo;
     }
-
-    public void savePet() throws IOException {
-        LocalDateTime dataHora = LocalDateTime.now();
-        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmm");
-        String dataFormatada = dataHora.format(formatador);
-
-        String nomeDoArquivo = "./"+ dataFormatada + "-"
-                + this.nome.toUpperCase()
-                + this.sobrenome.toUpperCase()
-                + ".txt";
-
-
-        try (BufferedWriter br = new BufferedWriter(new FileWriter(nomeDoArquivo, true))) {
-            br.write("1 - " + this.nome + " " + this.sobrenome + "\n");
-            br.write("2 - " + this.tipo + "\n");
-            br.write("3 - " + this.sexo + "\n");
-            br.write("4 - " + this.endereco + "\n");
-            br.write("5 - " + this.idade + " anos" + "\n");
-            br.write("6 - " + this.peso + "kg" + "\n");
-            br.write("7 - " + this.raca + "\n");
-        } catch (IOException e) {
-            System.out.println("Falha ao salvar o arquivo");
-        }
-    }
 }
