@@ -13,7 +13,7 @@ public class Progam {
 
         int option = 0;
         while (option != 6) {
-            System.out.println("MENU");
+            System.out.println("======= MENU =======");
             System.out.println("1 - Cadastrar novo pet");
             System.out.println("2 - Alterar dados do pet cadastrado");
             System.out.println("3 - Deletar um pet cadastrado");
@@ -59,7 +59,7 @@ public class Progam {
                     break;
             }
         }
-        System.out.println("Progama encerrado.");
+        System.out.println("======= Progama encerrado =======");
         sc.close();
     }
 }

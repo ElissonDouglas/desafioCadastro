@@ -288,7 +288,7 @@ public class PetService {
 
         // Imprime os resultados
         if (sb.length() > 0) {
-            System.out.println("\nResultados da Busca:");
+            System.out.println("\n======= Resultados da Busca =======");
             System.out.println(sb);
         } else {
             System.out.println("\nNenhum pet encontrado com esses critérios.");
@@ -428,12 +428,13 @@ public class PetService {
                     .append(pet.getTipo()).append(" - ")
                     .append(pet.getSexo()).append(" - ")
                     .append(pet.getEndereco()).append(" - ")
-                    .append(String.format("%.2f", pet.getIdade())).append(" anos - ")
+                    .append(String.format("%.1f", pet.getIdade())).append(" ano(s) - ")
                     .append(String.format("%.2f", pet.getPeso())).append("kg - ")
                     .append(pet.getRaca()).append("\n");
 
             contadorResultados++;
         }
+        System.out.println("======= Resultados da pesquisa =======");
         return sb.toString();
     }
 
