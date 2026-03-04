@@ -52,6 +52,8 @@ public class FileService {
             br.write("7 - " + pet.getRaca() + "\n");
         } catch (IOException e) {
             System.out.println("Falha ao salvar o arquivo");
+        } finally {
+            System.out.println("Arquivo salvo com sucesso: " + nomeDoArquivo);
         }
     }
 }

@@ -31,6 +31,7 @@ public class Progam {
                     sc.nextLine();
                 } catch (IllegalArgumentException e) {
                     System.out.println("Error: " + e.getMessage());
+
                 }
             } while (!entradaValida);
 
@@ -39,10 +40,18 @@ public class Progam {
                 case 1:
                     PetService.iniciarCadastro();
                     break;
+                case 2:
+                    PetService.alterarCadastro();
+                    break;
+                case 3:
+                    PetService.deletarCadastro();
+                    break;
                 case 4:
+                    System.out.println("RESULTADOS:");
                     System.out.println(PetService.buscarTodosCadastros());
                     break;
                 case 5:
+                    System.out.println("RESULTADOS:");
                     PetService.buscarPet();
                     break;
             }

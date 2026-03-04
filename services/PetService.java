@@ -6,10 +6,9 @@ import entities.Tipo;
 import exceptions.InvalidAge;
 import exceptions.InvalidWeight;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
@@ -202,8 +201,9 @@ public class PetService {
        }
    }
 
-    public static void buscarPet() {
+    public static ArrayList<File> buscarPet() {
         Scanner sc = new Scanner(System.in);
+        ArrayList<File> arquivosResultados = new ArrayList<>();
 
         // 1. PEGANDO O TIPO DE ANIMAL (Filtro obrigatório)
         System.out.println("Qual o tipo de animal quer buscar?: \n1 - Gato\n2 - Cachorro");
@@ -251,14 +251,14 @@ public class PetService {
                 break;
             default:
                 System.out.println("Opção inválida.");
-                return; // Sai da função
+                return null;
         }
 
         // 4. PREPARANDO A BUSCA
         File[] files = FileService.lerCadastros();
         if (files == null || files.length == 0) {
             System.out.println("Nenhum pet cadastrado no sistema.");
-            return;
+            return null;
         }
 
         StringBuilder sb = new StringBuilder();
@@ -303,6 +303,7 @@ public class PetService {
 
 
                 // se for o correto entao é adicionado nos resultados
+
                 if (tipoBate && criterioBate) {
                     sb.append(contadorResultados).append(". ")
                             .append(nomePet).append(" - ")
@@ -312,6 +313,7 @@ public class PetService {
                             .append(idadePet).append(" - ")
                             .append(pesoPet).append(" - ")
                             .append(racaPet).append("\n");
+                    arquivosResultados.add(file);
                     contadorResultados++;
                 }
 
@@ -326,9 +328,160 @@ public class PetService {
             System.out.println(sb);
         } else {
             System.out.println("\nNenhum pet encontrado com esses critérios.");
+            buscarPet();
         }
+        return arquivosResultados;
     }
 
+
+    // ALTERAR DADOS CADASTRADOS
+    public static void alterarCadastro() {
+        Scanner sc = new Scanner(System.in);
+
+        ArrayList<File> arquivosResultados = buscarPet();
+        boolean buscaValida = false;
+        File arquivoEscolhido = null;
+
+        while (!buscaValida) {
+            try {
+                System.out.println("Escolha uma das opções que deseja alterar.");
+                int num = sc.nextInt();
+                sc.nextLine();
+                assert arquivosResultados != null;
+                if (num <= arquivosResultados.size() && num > 0) {
+                    arquivoEscolhido = arquivosResultados.get(num-1);
+                    buscaValida = true;
+                } else {
+                    throw new IllegalArgumentException("opção inválida");
+                }
+
+
+            } catch (InputMismatchException e) {
+                System.out.println("Erro: valor inválido.");
+                sc.nextLine();
+            } catch (IllegalArgumentException e) {
+                System.out.println("Erro: " + e.getMessage());
+                sc.nextLine();
+            } // try
+        } // while
+
+        Pet petParaAlterar = new Pet();
+
+        // Aqui vai ler o arquivoEscolhido e preencher o objeto petParaAlterar
+        try (BufferedReader br = new BufferedReader(new FileReader(arquivoEscolhido))){
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith("1")) { // nome e sobrenome
+                    String[] nomeDividido = line.substring(3).split(" ", 2);
+                    petParaAlterar.setNome(nomeDividido[0]);
+                    petParaAlterar.setSobrenome(nomeDividido[1]);
+                } else if (line.startsWith("2")) { // tipo
+                    petParaAlterar.setTipo(Tipo.valueOf(line.substring(3).trim().toUpperCase()));
+                } else if (line.startsWith("3")) { // sexo
+                    petParaAlterar.setSexo(Sexo.valueOf(line.substring(3).trim().toUpperCase()));
+                } else if (line.startsWith("4")) { // endereço
+                    petParaAlterar.setEndereco(line.substring(3));
+                }
+                else if (line.startsWith("5")) { // idade
+                    petParaAlterar.setIdade(Float.parseFloat(line.substring(3).replace("anos", "").replace(",", ".").trim()));
+                } else if (line.startsWith("6")) { // peso
+                    petParaAlterar.setPeso(Float.parseFloat(line.substring(3).replace("kg", "").replace(",", ".").trim()));
+                } else if (line.startsWith("7")) { // raça
+                    petParaAlterar.setRaca(line.substring(3));
+                }
+            } // while
+        } catch (IOException e) {
+            System.out.println("Erro: Falha ao ler o arquivo.");
+        }
+
+
+        // Aqui começa a ler as perguntas do formulário
+        List<String> perguntas = FileService.lerPerguntasFormulario();
+
+        for (String pergunta : perguntas) {
+            int numeroPergunta = Integer.parseInt(pergunta.substring(0, 1));
+
+            switch (numeroPergunta) {
+                case 1:
+                    System.out.println(pergunta);
+                    boolean nomeValido = false;
+                    while (!nomeValido) {
+                        String nomeCompleto = sc.nextLine();
+                        if (validarNome(nomeCompleto)) {
+                            petParaAlterar.setNome(nomeCompleto.split(" ", 2)[0]);
+                            petParaAlterar.setSobrenome(nomeCompleto.split(" ", 2)[1]);
+                            nomeValido = true;
+                        } else {
+                            System.out.println("nome inválido");
+                        }
+                    }
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    System.out.println(pergunta);
+                    petParaAlterar.setEndereco(sc.nextLine());
+                    break;
+                case 5:
+                    boolean idadeValida = false;
+                    while (!idadeValida) {
+                        System.out.println(pergunta);
+                        float idade = sc.nextFloat();
+                        sc.nextLine();
+                        System.out.println("A idade está em: \n1 - anos\n2 - meses");
+                        int anosOuMeses = sc.nextInt();
+                        sc.nextLine();
+                        try {
+                            if (anosOuMeses == 1) {
+                                if (idade > 20) {
+                                    throw new InvalidAge("Idade do pet não pode ser maior que 20 anos.");
+                                } else {
+                                    petParaAlterar.setIdade(idade);
+                                    idadeValida = true;
+                                }
+                            } else if (anosOuMeses == 2){
+                                idade = idade / 12;
+                                petParaAlterar.setIdade(idade);
+                            } else {
+                                System.out.println("Opção inválida");
+                            }
+                        } catch (InvalidAge e) {
+                            System.out.println("Erro:" + e.getMessage());
+                        }
+
+                    }
+                    break;
+                case 6:
+                    System.out.println(pergunta);
+                    petParaAlterar.setPeso(sc.nextFloat());
+                    sc.nextLine();
+                    break;
+                case 7:
+                    System.out.println(pergunta);
+                    petParaAlterar.setRaca(sc.nextLine());
+                    break;
+            } // switch
+        } // for loop
+        System.out.println(petParaAlterar);
+
+        // Deletar o arquivo antigo e salvar o arquivo novo
+        if (arquivoEscolhido.delete()) {
+            try {
+                FileService.salvarCadastro(petParaAlterar);
+            }
+            catch (IOException e) {
+                System.out.println("Erro:" + e.getMessage());;
+            }
+        } else {
+            System.out.println("Erro ao excluir o registro antigo");
+        }
+
+    }
+
+
+    // busca todos os cadastros salvos na pasta petsCadastrados
    public static String buscarTodosCadastros() {
        File[] files = FileService.lerCadastros();
        StringBuilder sb = new StringBuilder();
@@ -352,4 +505,47 @@ public class PetService {
        }
         return sb.toString();
    }
+
+
+   // Deletar um arquivo
+    public static void deletarCadastro() {
+        Scanner sc = new Scanner(System.in);
+        ArrayList<File> arquivosResultados = buscarPet();
+        boolean buscaValida = false;
+        File arquivoEscolhido = null;
+
+        while (!buscaValida) {
+            try {
+                System.out.println("Escolha uma das opções que deseja deletar dos registros");
+                int num = sc.nextInt();
+                sc.nextLine();
+                assert arquivosResultados != null;
+                if (num <= arquivosResultados.size() && num > 0) {
+                    arquivoEscolhido = arquivosResultados.get(num-1);
+                    buscaValida = true;
+                } else {
+                    throw new IllegalArgumentException("opção inválida");
+                }
+            }  catch (InputMismatchException e) {
+                System.out.println("Erro: valor inválido.");
+                sc.nextLine();
+            } catch (IllegalArgumentException e) {
+                System.out.println("Erro: " + e.getMessage());
+                sc.nextLine();
+             } // try
+         } // while
+
+        System.out.println("Você tem certeza que deseja deletar? (s/n)");
+        String escolha = sc.nextLine().trim();
+
+        if (escolha.equalsIgnoreCase("s")) {
+            if (arquivoEscolhido.delete()) {
+                System.out.println("Arquivo deletado com sucesso.");
+            } else {
+                System.out.println("Ocorreu um erro");
+            }
+        } else if (escolha.equalsIgnoreCase("n")) {
+            System.out.println("Operação cancelada");
+        }
+}
 }
