@@ -36,10 +36,7 @@ public class FileService {
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmm");
         String dataFormatada = dataHora.format(formatador);
 
-        String nomeDoArquivo = "./petsCadastrados/"+ dataFormatada + "-"
-                + pet.getNome().toUpperCase()
-                + pet.getSobrenome().toUpperCase()
-                + ".txt";
+        String nomeDoArquivo = STR."./petsCadastrados/\{dataFormatada}-\{pet.getNome().toUpperCase()}\{pet.getSobrenome().toUpperCase()}.txt";
 
 
         try (BufferedWriter br = new BufferedWriter(new FileWriter(nomeDoArquivo, true))) {
@@ -58,7 +55,7 @@ public class FileService {
     }
 
 
-    // Método novo para acabar com a repetição de código
+    // Converte dados dos arquivos .txt dos pets cadastrados para objetos Pet
     public static Pet converterArquivoParaPet(File file) {
         Pet pet = new Pet();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {

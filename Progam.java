@@ -40,7 +40,6 @@ public class Progam {
             } while (!entradaValida);
 
             switch (option) {
-                // TODO: fazer a regra 10 do passo 3 do desafio
                 case 1:
                     petService.iniciarCadastro();
                     break;
@@ -63,6 +62,4 @@ public class Progam {
         System.out.println("Progama encerrado.");
         sc.close();
     }
-
-
 }

@@ -14,6 +14,7 @@ import java.util.Scanner;
 
 public class PetService {
 
+    // FAZ A VERIFICAÇÃO SE O NOME DO PET SÓ CONTÉM LETRAS
     public static boolean validarNome(String nomeCompleto) {
         String regra = "^[A-Za-z]+( [A-Za-z]+)+$";
 
@@ -24,6 +25,7 @@ public class PetService {
         return true;
     }
 
+    // INICIA O PROCESSO DE CADASTRO DE PET
     public void iniciarCadastro() {
         Scanner sc = new Scanner(System.in);
         FileService fileService = new FileService();
@@ -191,7 +193,7 @@ public class PetService {
                     }
         }
 
-        //Salvar cadastro do pet
+        //Salva cadastro do pet
         try {
             fileService.salvarCadastro(pet);
             System.out.println("Pet cadastrado com sucesso!");
@@ -200,8 +202,8 @@ public class PetService {
            }
        }
    }
-    //BUSCAR PET POR CRITÉRIO
 
+    //BUSCAR PET POR CRITÉRIO
     public static ArrayList<File> buscarPet() {
         Scanner sc = new Scanner(System.in);
         ArrayList<File> arquivosResultados = new ArrayList<>();
@@ -211,42 +213,39 @@ public class PetService {
         sc.nextLine();
         Tipo tipoAnimal = Tipo.pegarPorNumero(num);
 
-        System.out.println("Escolha o parâmetro para realizar a busca: \n" +
-                "1 - Nome ou sobrenome\n" +
-                "2 - Sexo\n" +
-                "3 - Idade\n" +
-                "4 - Peso\n" +
-                "5 - Raça\n" +
-                "6 - Endereço");
-        int searchOption = sc.nextInt();
+        String menuCriterios = "Escolha o parâmetro para realizar a busca: \n" +
+                "1 - Nome ou sobrenome\n2 - Sexo\n3 - Idade\n" +
+                "4 - Peso\n5 - Raça\n6 - Endereço";
+
+        // PEGA O PRIMEIRO CRITÉRIO
+        System.out.println("=== 1º CRITÉRIO ===");
+        System.out.println(menuCriterios);
+        int searchOption1 = sc.nextInt();
         sc.nextLine();
 
-        String termoBusca = "";
-        switch (searchOption) {
-            case 1:
-                System.out.println("Digite o nome ou parte do nome:");
-                break;
-            case 2:
-                System.out.println("Digite o sexo (MACHO ou FEMEA):");
-                break;
-            case 3:
-                System.out.println("Digite a idade do pet:");
-                break;
-            case 4:
-                System.out.println("Digite o peso do pet:");
-                break;
-            case 5:
-                System.out.println("Digite a raça do pet:");
-                break;
-            case 6:
-                System.out.println("Digite o endereço ou parte do endereço do pet:");
-                break;
-            default:
-                System.out.println("Opção inválida.");
-                return null;
-        }
-        termoBusca = sc.nextLine().toLowerCase();
+        // PERGUNTA SE VAI BUSCAR COM UM SEGUNDO CRITÉRIO
+        int searchOption2 = 0; // 0 significa que não tem segundo critério
+        System.out.println("Deseja combinar com um 2º critério de busca? (S/N)");
+        String adicionarSegundo = sc.nextLine();
 
+        if (adicionarSegundo.equalsIgnoreCase("S")) {
+            System.out.println("=== 2º CRITÉRIO ===");
+            System.out.println(menuCriterios);
+            searchOption2 = sc.nextInt();
+            sc.nextLine();
+        }
+
+        // PEGA A PALAVRA/TERMO PARA BUSCAR
+        System.out.println("\n--- Valores da Busca ---");
+        String termoBusca1 = pegarTermoDaBusca(sc, searchOption1);
+        String termoBusca2 = "";
+
+        // VERIFICA SE TEM SEGUNDO CRITÉRIO
+        if (searchOption2 != 0) {
+            termoBusca2 = pegarTermoDaBusca(sc, searchOption2);
+        }
+
+        // LÊ OS ARQUIVOS SALVOS
         File[] files = FileService.lerCadastros();
         if (files == null || files.length == 0) {
             System.out.println("Nenhum pet cadastrado no sistema.");
@@ -256,31 +255,24 @@ public class PetService {
         StringBuilder sb = new StringBuilder();
         int contadorResultados = 1;
 
-        // O LAÇO FICOU MUITO MAIS LIMPO
+        // A VERIFICAÇÃO DOS CRITÉRIOS COMEÇA
         for (File file : files) {
-            // CHAMA O CONVERSOR
             Pet pet = FileService.converterArquivoParaPet(file);
 
+            // Valida o tipo (Cachorro/Gato)
             boolean tipoBate = pet.getTipo().equals(tipoAnimal);
-            boolean criterioBate = false;
 
-            // Faz a validação baseada no objeto pet
-            if (searchOption == 1) {
-                String nomeCompleto = (pet.getNome() + " " + pet.getSobrenome()).toLowerCase();
-                criterioBate = nomeCompleto.contains(termoBusca);
-            } else if (searchOption == 2) {
-                criterioBate = pet.getSexo().name().equalsIgnoreCase(termoBusca);
-            } else if (searchOption == 3) {
-                criterioBate = String.valueOf(pet.getIdade()).contains(termoBusca);
-            } else if (searchOption == 4) {
-                criterioBate = String.valueOf(pet.getPeso()).contains(termoBusca);
-            } else if (searchOption == 5) {
-                criterioBate = pet.getRaca().toLowerCase().contains(termoBusca);
-            } else if (searchOption == 6) {
-                criterioBate = pet.getEndereco().toLowerCase().contains(termoBusca);
+            // Valida o critério 1
+            boolean criterio1Bate = validarCriterio(pet, searchOption1, termoBusca1);
+
+            // Valida o critério 2 (Se não tiver critério 2, assume como verdadeiro para não atrapalhar)
+            boolean criterio2Bate = true;
+            if (searchOption2 != 0) {
+                criterio2Bate = validarCriterio(pet, searchOption2, termoBusca2);
             }
 
-            if (tipoBate && criterioBate) {
+            // Se passar em tudo adiciona na lista de resultados
+            if (tipoBate && criterio1Bate && criterio2Bate) {
                 sb.append(contadorResultados).append(". ")
                         .append(pet.getNome()).append(" ").append(pet.getSobrenome()).append(" - ")
                         .append(pet.getTipo()).append(" - ")
@@ -294,6 +286,7 @@ public class PetService {
             }
         }
 
+        // Imprime os resultados
         if (sb.length() > 0) {
             System.out.println("\nResultados da Busca:");
             System.out.println(sb);
@@ -357,10 +350,8 @@ public class PetService {
                         }
                     }
                     break;
-                case 2:
-                    break;
-                case 3:
-                    break;
+                case 2: break;
+                case 3: break;
                 case 4:
                     System.out.println(pergunta);
                     petParaAlterar.setEndereco(sc.nextLine());
@@ -447,7 +438,7 @@ public class PetService {
     }
 
 
-   // Deletar um arquivo
+   // Deletar um arquivo da pasta petsCadastrados
     public void deletarCadastro() {
         Scanner sc = new Scanner(System.in);
         ArrayList<File> arquivosResultados = buscarPet();
@@ -488,4 +479,36 @@ public class PetService {
             System.out.println("Operação cancelada");
         }
 }
+
+    // PERGUNTA AO USUÁRIOS OS TERMOS PARA BUSCAR
+    private static String pegarTermoDaBusca(Scanner sc, int opcao) {
+        switch (opcao) {
+            case 1: System.out.println("Digite o nome ou parte do nome:"); break;
+            case 2: System.out.println("Digite o sexo (MACHO ou FEMEA):"); break;
+            case 3: System.out.println("Digite a idade do pet:"); break;
+            case 4: System.out.println("Digite o peso do pet:"); break;
+            case 5: System.out.println("Digite a raça do pet:"); break;
+            case 6: System.out.println("Digite o endereço ou parte do endereço do pet:"); break;
+            default: return "";
+        }
+        return sc.nextLine().toLowerCase();
+    }
+
+    // CHECKA SE SE OS CRITÉRIOS BATEM COM ALGUM CADASTRO
+    private static boolean validarCriterio(Pet pet, int opcao, String termoBusca) {
+        if (opcao == 1) {
+            return (pet.getNome() + " " + pet.getSobrenome()).toLowerCase().contains(termoBusca);
+        } else if (opcao == 2) {
+            return pet.getSexo().name().equalsIgnoreCase(termoBusca);
+        } else if (opcao == 3) {
+            return String.valueOf(pet.getIdade()).contains(termoBusca);
+        } else if (opcao == 4) {
+            return String.valueOf(pet.getPeso()).contains(termoBusca);
+        } else if (opcao == 5) {
+            return pet.getRaca().toLowerCase().contains(termoBusca);
+        } else if (opcao == 6) {
+            return pet.getEndereco().toLowerCase().contains(termoBusca);
+        }
+        return true;
+    }
 }
