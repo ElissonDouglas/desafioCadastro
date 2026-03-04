@@ -1,3 +1,4 @@
+import services.FileService;
 import services.PetService;
 
 import java.io.IOException;
@@ -7,6 +8,9 @@ import java.util.Scanner;
 public class Progam {
     public static void main(String[] args) throws IOException {
         Scanner sc = new Scanner(System.in);
+        PetService petService = new PetService();
+
+
         int option = 0;
         while (option != 6) {
             System.out.println("MENU");
@@ -38,21 +42,21 @@ public class Progam {
             switch (option) {
                 // TODO: fazer a regra 10 do passo 3 do desafio
                 case 1:
-                    PetService.iniciarCadastro();
+                    petService.iniciarCadastro();
                     break;
                 case 2:
-                    PetService.alterarCadastro();
+                    petService.alterarCadastro();
                     break;
                 case 3:
-                    PetService.deletarCadastro();
+                    petService.deletarCadastro();
                     break;
                 case 4:
                     System.out.println("RESULTADOS:");
-                    System.out.println(PetService.buscarTodosCadastros());
+                    System.out.println(petService.buscarTodosCadastros());
                     break;
                 case 5:
                     System.out.println("RESULTADOS:");
-                    PetService.buscarPet();
+                    petService.buscarPet();
                     break;
             }
         }

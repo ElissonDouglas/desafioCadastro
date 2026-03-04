@@ -56,4 +56,35 @@ public class FileService {
             System.out.println("Arquivo salvo com sucesso: " + nomeDoArquivo);
         }
     }
+
+
+    // Método novo para acabar com a repetição de código
+    public static Pet converterArquivoParaPet(File file) {
+        Pet pet = new Pet();
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith("1")) {
+                    String[] nomeDividido = line.substring(3).trim().split(" ", 2);
+                    pet.setNome(nomeDividido[0]);
+                    pet.setSobrenome(nomeDividido.length > 1 ? nomeDividido[1] : "");
+                } else if (line.startsWith("2")) {
+                    pet.setTipo(entities.Tipo.valueOf(line.substring(3).trim().toUpperCase()));
+                } else if (line.startsWith("3")) {
+                    pet.setSexo(entities.Sexo.valueOf(line.substring(3).trim().toUpperCase()));
+                } else if (line.startsWith("4")) {
+                    pet.setEndereco(line.substring(3).trim());
+                } else if (line.startsWith("5")) {
+                    pet.setIdade(Float.parseFloat(line.substring(3).replace("anos", "").replace(",", ".").trim()));
+                } else if (line.startsWith("6")) {
+                    pet.setPeso(Float.parseFloat(line.substring(3).replace("kg", "").replace(",", ".").trim()));
+                } else if (line.startsWith("7")) {
+                    pet.setRaca(line.substring(3).trim());
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Erro ao ler o arquivo: " + file.getName());
+        }
+        return pet;
+    }
 }
