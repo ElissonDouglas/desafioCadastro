@@ -1,11 +1,5 @@
 package entities;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 public class Pet {
     private String nome;
     private String sobrenome;
